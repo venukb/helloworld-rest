@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+         version="2.5">
+    <display-name>HelloWorld REST Application</display-name>
+
+    <filter>
+        <filter-name>helloworld</filter-name>
+        <filter-class>org.glassfish.jersey.servlet.ServletContainer</filter-class>
+        <init-param>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>com.venu.rest.HelloWorldApplication</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jersey.config.server.wadl.disableWadl</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <async-supported>true</async-supported>
+    </filter>
+
+    <filter>
+        <filter-name>cross-origin</filter-name>
+        <filter-class>org.eclipse.jetty.servlets.CrossOriginFilter</filter-class>
+        <init-param>
+            <param-name>allowedOrigins</param-name>
+            <param-value>*</param-value>
+        </init-param>
+        <init-param>
+            <param-name>allowedMethods</param-name>
+            <param-value>GET,POST,OPTIONS,DELETE,PUT,HEAD</param-value>
+        </init-param>
+        <init-param>
+            <param-name>allowedHeaders</param-name>
+            <param-value>origin, content-type, accept, authorization</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>cross-origin</filter-name>
+        <url-pattern>/openapi/*</url-pattern>
+    </filter-mapping>
+
+    <servlet>
+        <servlet-name>alive</servlet-name>
+        <servlet-class>com.venu.rest.AliveServlet</servlet-class>
+    </servlet>
+
+    <!-- Dropwizard Metrics Servlet -->
+    <servlet>
+        <servlet-name>metrics</servlet-name>
+        <servlet-class>com.codahale.metrics.servlets.AdminServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>jol</servlet-name>
+        <servlet-class>org.jolokia.http.AgentServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <!-- OpenApi servlet to serve spec -->
+    <servlet>
+        <servlet-name>openapi</servlet-name>
+        <servlet-class>io.swagger.v3.jaxrs2.integration.OpenApiServlet</servlet-class>
+        <init-param>
+            <param-name>openApi.configuration.resourcePackages</param-name>
+            <param-value>com.venu.rest</param-value>
+        </init-param>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+
+    <!-- ********************************** -->
+    <!-- SERVLET/FILTER MAPPING DEFINITIONS -->
+    <!-- ********************************** -->
+    <filter-mapping>
+        <filter-name>helloworld</filter-name>
+        <url-pattern>/vk/*</url-pattern>
+    </filter-mapping>
+
+    <!-- Servlet Mapping -->
+    <servlet-mapping>
+        <servlet-name>alive</servlet-name>
+        <url-pattern>/alive</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>openapi</servlet-name>
+        <url-pattern>/openapi/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>metrics</servlet-name>
+        <url-pattern>/check/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>jol</servlet-name>
+        <url-pattern>/jol/*</url-pattern>
+    </servlet-mapping>
+
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>app</web-resource-name>
+            <url-pattern>/vk/*</url-pattern>
+            <url-pattern>/jol/*</url-pattern>
+            <url-pattern>/openapi/*</url-pattern>
+        </web-resource-collection>
+        <!-- OMIT auth-constraint -->
+    </security-constraint>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>app</web-resource-name>
+            <url-pattern>/mon/metrics/*</url-pattern>
+            <url-pattern>/mon/ping/*</url-pattern>
+            <url-pattern>/mon/threads/*</url-pattern>
+        </web-resource-collection>
+        <!-- OMIT auth-constraint -->
+    </security-constraint>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>app</web-resource-name>
+            <url-pattern>/check/*</url-pattern>
+        </web-resource-collection>
+        <!-- OMIT auth-constraint -->
+    </security-constraint>
+
+    <security-constraint>
+        <display-name>Restrict direct access</display-name>
+        <web-resource-collection>
+            <web-resource-name>Folder Restricted</web-resource-name>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint/>
+    </security-constraint>
+
+    <listener>
+        <listener-class>com.venu.rest.DwHealthCheckListener</listener-class>
+    </listener>
+</web-app>
