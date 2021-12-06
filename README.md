@@ -1,2 +1,3 @@
 # helloworld-rest
-rest app template
+
+REST APP template using Jersey 2 and Guice 
